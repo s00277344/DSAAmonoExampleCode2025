@@ -5,6 +5,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Sprites;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Security.Cryptography;
+using Tracker.WebAPIClient;
 
 namespace MonoExample2025
 {
@@ -17,6 +20,7 @@ namespace MonoExample2025
         private SoundEffectInstance clickPlayer;
         private SpriteFont font;
         private SimpleSprite bodySprite;
+        private ColourChoice colourChoice;
         // Create an array of simplesprites
         SimpleSprite[] spritesCollection = new SimpleSprite[5];
 
@@ -29,6 +33,8 @@ namespace MonoExample2025
 
         protected override void Initialize()
         {
+            ActivityAPIClient.Track(StudentID: "S00277344", StudentName: "Yoann SILVAIN", activityName: "DSAA Week 1 Lab 2 Sheet 3 2025", Task: "Week 1 Lab 2 Colour class working");
+
             // TODO: Add your initialization logic here
             new InputEngine(this);
             Vector2 currentMouse = InputEngine.MousePosition;
@@ -44,18 +50,20 @@ namespace MonoExample2025
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Texture2D bodytx = Content.Load<Texture2D>("body");
+            Texture2D whitebg = Content.Load<Texture2D>("whitebg");
             openingMusicTrack = Content.Load<Song>("Opening Music Track");
             //MediaPlayer.Play(openingMusicTrack);
             clickEffect = Content.Load<SoundEffect>("Collected");
              clickPlayer = clickEffect.CreateInstance();
             font = Content.Load<SpriteFont>("font");
-            //clickEffect.Play();
-            //bodySprite = new SimpleSprite(bodytx, new Vector2(100, 100));
+            clickEffect.Play();
+            bodySprite = new SimpleSprite(bodytx, new Vector2(100, 100));
             
             // Work out the start position of the collection relative to the center of
             // the screen and taking into account the size of the collection and the size of
             // the images in the collection objects
             Vector2 startPosition = GraphicsDevice.Viewport.Bounds.Center.ToVector2();
+            colourChoice = new ColourChoice(Color.Blue, whitebg, startPosition);
             startPosition.X = startPosition.X - spritesCollection.Length * bodytx.Width/2;
             // position the collection of objects
             for (int i = 0; i < spritesCollection.Length; i++)
@@ -78,23 +86,23 @@ namespace MonoExample2025
             if (InputEngine.IsKeyPressed(Keys.T))
                 spritesCollection[0].Tint = !spritesCollection[0].Tint;
 
-            //if(InputEngine.IsKeyHeld(Keys.Right)) 
-            //{
-            //    bodySprite.Move(new Vector2(5, 0));
-            //}
-            //if (InputEngine.IsKeyHeld(Keys.Left))
-            //{
-            //    bodySprite.Move(new Vector2(-5, 0));
-            //}
+            if(InputEngine.IsKeyHeld(Keys.Right)) 
+            {
+                bodySprite.Move(new Vector2(5, 0));
+            }
+            if (InputEngine.IsKeyHeld(Keys.Left))
+            {
+                bodySprite.Move(new Vector2(-5, 0));
+            }
 
-                //if(InputEngine.IsMouseLeftClick() 
-                //    && bodySprite.BoundingRect.Contains(InputEngine.MousePosition.ToPoint() ))
-                //    if(clickPlayer.State != SoundState.Playing)
-                //    {
-                //        clickPlayer.Play();
-                //    }
+            if(InputEngine.IsMouseLeftClick() 
+                && bodySprite.BoundingRect.Contains(InputEngine.MousePosition.ToPoint() ))
+                if(clickPlayer.State != SoundState.Playing)
+                {
+                    clickPlayer.Play();
+                }
 
-                // TODO: Add your update logic here
+            // TODO: Add your update logic here
 
             base.Update(gameTime);
         }
@@ -104,8 +112,9 @@ namespace MonoExample2025
             
             GraphicsDevice.Clear(Color.CornflowerBlue);
             _spriteBatch.Begin();
-            _spriteBatch.DrawString(font, "Mongame Example 2024", GraphicsDevice.Viewport.Bounds.Center.ToVector2() - font.MeasureString("Mongame Example 2024")/2 - new Vector2(0,10), Color.White);
-            //bodySprite.draw(_spriteBatch);
+            _spriteBatch.DrawString(font, "Monogame Example 2024", GraphicsDevice.Viewport.Bounds.Center.ToVector2() - font.MeasureString("Mongame Example 2024")/2 - new Vector2(0,10), Color.White);
+            bodySprite.draw(_spriteBatch);
+            colourChoice.draw(_spriteBatch);
             // Draw the collection of objects
             foreach (var item in spritesCollection)
                 item.draw(_spriteBatch);
