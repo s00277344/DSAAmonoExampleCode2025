@@ -8,6 +8,8 @@ using Sprites;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Security.Cryptography;
 using Tracker.WebAPIClient;
+using SharpDX.MediaFoundation;
+using System;
 
 namespace MonoExample2025
 {
@@ -15,14 +17,14 @@ namespace MonoExample2025
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-        private Song openingMusicTrack;
-        private SoundEffect clickEffect;
-        private SoundEffectInstance clickPlayer;
-        private SpriteFont font;
-        private SimpleSprite bodySprite;
-        private ColourChoice colourChoice;
+        private ColourChoice playerColor;
+        private ColourChoice computerColor;
+        private Texture2D whitebg;
         // Create an array of simplesprites
-        SimpleSprite[] spritesCollection = new SimpleSprite[5];
+        ColourChoice[] colorCollection = new ColourChoice[3];
+        private Vector2 middleDown;
+        private Vector2 middleUp;
+        private SpriteFont font;
 
         public Game1()
         {
@@ -33,7 +35,7 @@ namespace MonoExample2025
 
         protected override void Initialize()
         {
-            ActivityAPIClient.Track(StudentID: "S00277344", StudentName: "Yoann SILVAIN", activityName: "DSAA Week 1 Lab 2 Sheet 3 2025", Task: "Week 1 Lab 2 Colour class working");
+            ActivityAPIClient.Track(StudentID: "S00277344", StudentName: "Yoann SILVAIN", activityName: "DSAA Week 1 Lab 2 Sheet 3 2025", Task: "Week 1 Lab 2 Colour array selection working");
 
             // TODO: Add your initialization logic here
             new InputEngine(this);
@@ -49,30 +51,29 @@ namespace MonoExample2025
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            Texture2D bodytx = Content.Load<Texture2D>("body");
-            Texture2D whitebg = Content.Load<Texture2D>("whitebg");
-            openingMusicTrack = Content.Load<Song>("Opening Music Track");
-            //MediaPlayer.Play(openingMusicTrack);
-            clickEffect = Content.Load<SoundEffect>("Collected");
-             clickPlayer = clickEffect.CreateInstance();
+            whitebg = Content.Load<Texture2D>("whitebg");
             font = Content.Load<SpriteFont>("font");
-            clickEffect.Play();
-            bodySprite = new SimpleSprite(bodytx, new Vector2(100, 100));
-            
-            // Work out the start position of the collection relative to the center of
-            // the screen and taking into account the size of the collection and the size of
-            // the images in the collection objects
-            Vector2 startPosition = GraphicsDevice.Viewport.Bounds.Center.ToVector2();
-            colourChoice = new ColourChoice(Color.Blue, whitebg, startPosition);
-            startPosition.X = startPosition.X - spritesCollection.Length * bodytx.Width/2;
-            // position the collection of objects
-            for (int i = 0; i < spritesCollection.Length; i++)
-            {
-                spritesCollection[i] = new SimpleSprite(bodytx, startPosition);
-                startPosition.X += bodytx.Width;
-            }
 
             // TODO: use this.Content to load your game content here
+            SetupPlayerChoices();
+        }
+
+        private void SetupPlayerChoices()
+        {
+            Vector2 startPositionColor = GraphicsDevice.Viewport.Bounds.Center.ToVector2();
+            middleDown = startPositionColor;
+            middleDown.X -= whitebg.Width / 2;
+            middleUp = middleDown;
+            middleDown.Y += whitebg.Height;
+            middleUp.Y -= whitebg.Height;
+            startPositionColor.X = startPositionColor.X - colorCollection.Length * whitebg.Width / 2;
+            for (int i = 0; i < colorCollection.Length; i++)
+            {
+                colorCollection[i] = new ColourChoice(whitebg, startPositionColor, Color.Blue);
+                startPositionColor.X += whitebg.Width;
+            }
+            colorCollection[0].color = Color.Red;
+            colorCollection[1].color = Color.Green;
         }
 
         protected override void Update(GameTime gameTime)
@@ -80,27 +81,22 @@ namespace MonoExample2025
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // Look at checking mouse clicks for each item in the collection
-            
-            // Toggle first element tint Needed for Week2 lab 1
-            if (InputEngine.IsKeyPressed(Keys.T))
-                spritesCollection[0].Tint = !spritesCollection[0].Tint;
-
-            if(InputEngine.IsKeyHeld(Keys.Right)) 
+            if (InputEngine.IsMouseLeftClick())
             {
-                bodySprite.Move(new Vector2(5, 0));
-            }
-            if (InputEngine.IsKeyHeld(Keys.Left))
-            {
-                bodySprite.Move(new Vector2(-5, 0));
-            }
-
-            if(InputEngine.IsMouseLeftClick() 
-                && bodySprite.BoundingRect.Contains(InputEngine.MousePosition.ToPoint() ))
-                if(clickPlayer.State != SoundState.Playing)
+                foreach (var item in colorCollection)
                 {
-                    clickPlayer.Play();
+                    if(item.sprite.BoundingRect.Contains(InputEngine.MousePosition.ToPoint()))
+                    {
+                        playerColor = new ColourChoice(whitebg, middleDown, item.color);
+                        playerColor.color.A = 255;
+                    }
                 }
+
+                Random rd = new Random();
+                int choice = rd.Next(0, 3);
+                computerColor = new ColourChoice(whitebg, middleUp, colorCollection[choice].color);
+                computerColor.color.A = 255;
+            }
 
             // TODO: Add your update logic here
 
@@ -112,12 +108,21 @@ namespace MonoExample2025
             
             GraphicsDevice.Clear(Color.CornflowerBlue);
             _spriteBatch.Begin();
-            _spriteBatch.DrawString(font, "Monogame Example 2024", GraphicsDevice.Viewport.Bounds.Center.ToVector2() - font.MeasureString("Mongame Example 2024")/2 - new Vector2(0,10), Color.White);
-            bodySprite.draw(_spriteBatch);
-            colourChoice.draw(_spriteBatch);
-            // Draw the collection of objects
-            foreach (var item in spritesCollection)
+            foreach(var item in colorCollection)
                 item.draw(_spriteBatch);
+            if(playerColor != null)
+                playerColor.draw(_spriteBatch);
+            if(computerColor != null)
+                computerColor.draw(_spriteBatch);
+            if(playerColor != null && computerColor != null)
+            {
+                if(computerColor.color == playerColor.color)
+                    _spriteBatch.DrawString(font, "Computer Wins", GraphicsDevice.Viewport.Bounds.Center.ToVector2() - font.MeasureString("Computer Wins") / 2 - new Vector2(0, 10), Color.White);
+                else
+                    _spriteBatch.DrawString(font, "Player Wins", GraphicsDevice.Viewport.Bounds.Center.ToVector2() - font.MeasureString("Player Wins") / 2 - new Vector2(0, 10), Color.White);
+
+            }
+
             _spriteBatch.End();
 
             // TODO: Add your drawing code here

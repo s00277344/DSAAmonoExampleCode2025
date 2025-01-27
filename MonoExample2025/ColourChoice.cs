@@ -1,33 +1,51 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Engine.Engines;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Framework.Utilities;
-using SharpDX.Direct3D9;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Sprites;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace MonoExample2025
 {
     public class ColourChoice
     {
-        Microsoft.Xna.Framework.Color Choice;
-        Microsoft.Xna.Framework.Vector2 ChoicePosition;
-        Texture2D ChoiceTexture;
+        public SimpleSprite sprite;
+        private Texture2D texture;
+        public Vector2 position;
+        public Color color;
+        private bool changed;
 
-        public ColourChoice(Microsoft.Xna.Framework.Color choice, Texture2D texture, Microsoft.Xna.Framework.Vector2 startPosition)
+        public ColourChoice(Texture2D texture, Vector2 position, Color color)
         {
-            Choice = choice;
-            ChoiceTexture = texture;
-            ChoicePosition = startPosition;
+            this.texture = texture;
+            this.position = position;
+            this.color = color;
+            changed = false;
+            sprite = new SimpleSprite(texture, position);
         }
 
         public void draw(SpriteBatch sp)
         {
-            sp.Draw(ChoiceTexture, ChoicePosition, Choice);
+            if (sprite.BoundingRect.Contains(InputEngine.MousePosition.ToPoint()))
+            {
+                sp.Draw(texture, position, Color.White);
+                if (InputEngine.IsMouseLeftClick())
+                {
+                    if (!changed)
+                    {
+                        changed = true;
+                        color.A = 127;
+                    }
+                    else
+                    {
+                        changed = false;
+                        color.A = 255;
+                    }
+                }
+            }
+            else 
+                sp.Draw(texture, position, color);
         }
     }
 }
