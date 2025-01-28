@@ -15,6 +15,15 @@ namespace MonoExample2025
 {
     public class Game1 : Game
     {
+        enum STATE
+        {
+            STARTING,
+            PLAYING,
+            WON,
+            LOST,
+            ASKING
+        }
+
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private ColourChoice playerColor;
@@ -25,6 +34,8 @@ namespace MonoExample2025
         private Vector2 middleDown;
         private Vector2 middleUp;
         private SpriteFont font;
+        private Popup_Choice popup;
+        private STATE currentState;
 
         public Game1()
         {
@@ -44,6 +55,7 @@ namespace MonoExample2025
             _graphics.PreferredBackBufferWidth = 1920;
             _graphics.PreferredBackBufferHeight = 780;
             _graphics.ApplyChanges();
+            currentState = STATE.STARTING;
 
             base.Initialize();
         }
@@ -53,9 +65,15 @@ namespace MonoExample2025
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             whitebg = Content.Load<Texture2D>("whitebg");
             font = Content.Load<SpriteFont>("font");
+            Texture2D bg = Content.Load<Texture2D>("backgroundImage");
 
             // TODO: use this.Content to load your game content here
             SetupPlayerChoices();
+            middleUp.Y -= whitebg.Height + 5;
+            middleUp.X -= bg.Width / 2;
+            popup = new Popup_Choice("choice", Color.Pink, font, whitebg, bg, middleUp);
+            middleUp.Y += whitebg.Height + 5;
+            middleUp.X += bg.Width / 2;
         }
 
         private void SetupPlayerChoices()
@@ -83,6 +101,7 @@ namespace MonoExample2025
 
             if (InputEngine.IsMouseLeftClick())
             {
+                currentState = STATE.PLAYING;
                 foreach (var item in colorCollection)
                 {
                     if(item.sprite.BoundingRect.Contains(InputEngine.MousePosition.ToPoint()))
@@ -98,7 +117,13 @@ namespace MonoExample2025
                 computerColor.color.A = 255;
             }
 
+            if(currentState == STATE.WON || currentState == STATE.LOST)
+            {
+                popup = new Popup_Choice("Do you want to play again?")
+            }
+
             // TODO: Add your update logic here
+            popup.Clicked();
 
             base.Update(gameTime);
         }
@@ -117,12 +142,17 @@ namespace MonoExample2025
             if(playerColor != null && computerColor != null)
             {
                 if(computerColor.color == playerColor.color)
+                {
                     _spriteBatch.DrawString(font, "Computer Wins", GraphicsDevice.Viewport.Bounds.Center.ToVector2() - font.MeasureString("Computer Wins") / 2 - new Vector2(0, 10), Color.White);
+                    currentState = STATE.LOST;
+                }
                 else
+                {
                     _spriteBatch.DrawString(font, "Player Wins", GraphicsDevice.Viewport.Bounds.Center.ToVector2() - font.MeasureString("Player Wins") / 2 - new Vector2(0, 10), Color.White);
-
+                    currentState = STATE.WON;
+                }
             }
-
+            popup.drawPopup(_spriteBatch);
             _spriteBatch.End();
 
             // TODO: Add your drawing code here
