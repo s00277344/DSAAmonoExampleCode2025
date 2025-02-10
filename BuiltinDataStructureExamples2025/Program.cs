@@ -32,10 +32,10 @@
                 XP = 200
             };
             //print<Player>(p);
-            //LL_ex();
+            LL_ex();
             //ST_ex();
             //Queue_ex();
-            Dict_ex();
+            //Dict_ex();
 
             Console.ReadLine();
         }
@@ -52,7 +52,7 @@
             someLinkedList.AddFirst(2);
             int sum;
             sum = 0;
-            Console.WriteLine("First is {0} Last is {1}. ", someLinkedList.First.ToString(), someLinkedList.Count());
+            Console.WriteLine("First is {0} Last is {1}. ", someLinkedList.First.Value.ToString(), someLinkedList.Last.Value.ToString());
             LinkedListNode<int> node = someLinkedList.First;
             // Last Node is always null;
             while (node != null)
