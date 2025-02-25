@@ -11,6 +11,7 @@ namespace LINQexamples2025
         static void Main(string[] args)
         {
             GameObjects _gobjs = new GameObjects();
+            _gobjs.ExportModel();
 
             foreach (var item in _gobjs.Collectables)
             {
@@ -34,7 +35,7 @@ namespace LINQexamples2025
 
             var _playerXPDetails = _gobjs.players
                 .Select(p => new {
-                                    Name = String.Concat(p.firstName, " ", p.sceondName),
+                                    Name = String.Concat(p.FirstName, " ", p.SceondName),
                                     PlayerXP = p.XP });
 
             foreach (var pxp in _playerXPDetails)
@@ -44,11 +45,11 @@ namespace LINQexamples2025
 
             var playerScores = (from p in _gobjs.players
                                 join s in _gobjs.scores
-                                on p.playerId equals s.PlayerID
+                                on p.PlayerId equals s.PlayerID
                                 join g in _gobjs.games
                                 on  s.GameID equals g.GameID
                                 select new { Game = g.GameName,
-                                            Name = String.Concat(p.firstName, " ", p.sceondName),
+                                            Name = String.Concat(p.FirstName, " ", p.SceondName),
                                              PlayerScore = s.score})
                                 .OrderByDescending(order => order.PlayerScore);
 
@@ -76,15 +77,15 @@ namespace LINQexamples2025
             Player twinny = _gobjs.players.FirstOrDefault(p => p.GamerTag == "Twinny");
             if (twinny != null)
                 Console.WriteLine("{0}", twinny.ToString());
-            var twinnyScores = _gobjs.scores.Where(s => s.PlayerID == twinny.playerId);
+            var twinnyScores = _gobjs.scores.Where(s => s.PlayerID == twinny.PlayerId);
             foreach (var item in twinnyScores)
                 Console.WriteLine("Score for {0} is {1}", 
-                                    twinny.playerId, item.ToString());
+                                    twinny.PlayerId, item.ToString());
 
             // Select all players that have a score greater than 300
             var scoresForPlayersOver300 = (from p in _gobjs.players
                                     join s in _gobjs.scores
-                                    on p.playerId equals s.PlayerID
+                                    on p.PlayerId equals s.PlayerID
                                     where s.score > 300
                                     select new { player = p.GamerTag,
                                                     playerScore = s.score });

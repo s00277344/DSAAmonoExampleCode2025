@@ -10,5 +10,8 @@ namespace TiledSpriteExample
     public static class Helper
     {
         public static Texture2D SpriteSheet { get; set; }
+        // AS we are not using Game Components or Game Services here
+        // Add any references here that you need to access from anywhere
+        // in your game
     }
 }

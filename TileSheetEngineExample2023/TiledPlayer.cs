@@ -7,11 +7,21 @@ using Engine.Engines;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SharpDX.Direct3D9;
 
 namespace TiledSpriteExample
 {
     public class TiledPlayer : TiledSprite
     {
+        public Rectangle CollisionField
+        {
+            get
+            {
+                return new Rectangle(pixelPosition.ToPoint(),
+                new Point(FrameWidth, FrameHeight));
+            }
+
+        }
         public float RotationSpeed { get; set; }
         public float speed { get; set; } 
         public TiledPlayer(Vector2 tilePosition, 

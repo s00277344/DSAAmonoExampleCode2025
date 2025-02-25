@@ -18,7 +18,11 @@ namespace TileSheetEngineExample2023
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         TiledPlayer player;
+        TileLayer current_layer;
+
         private TileLayer t_layer;
+        TileLayer level2;
+
         List<TileRef> layer_tileRefs = new List<TileRef>()
         {
             // column, row, value in TileMap
@@ -26,6 +30,7 @@ namespace TileSheetEngineExample2023
             new TileRef(3,3,(int)TileTypes.STEEL_FLOOR_TILE),
             new TileRef(4,2,(int)TileTypes.BLUE_STEEL_WALL_TILE),
             new TileRef(0,2,(int)TileTypes.EAGLE_TILE),
+            // Include Special Tile here
         };
         // Just for future reference Not used here
         TileTypes[] ImpassableTileTypes = new TileTypes[] { TileTypes.BLUE_STEEL_WALL_TILE, TileTypes.STEEL_WALL_TILE};
