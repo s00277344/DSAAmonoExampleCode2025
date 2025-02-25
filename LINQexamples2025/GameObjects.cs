@@ -1,5 +1,8 @@
-﻿using System;
+﻿using CsvHelper;
+using CsvHelper.Configuration;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,26 +24,26 @@ namespace LINQexamples2025
 
         public List<Player> players = new List<Player>
         {
-            new Player { playerId = Guid.NewGuid().ToString(),
-                                         firstName = "Paul",
-                                         sceondName = "Powell",
+            new Player { PlayerId = Guid.NewGuid().ToString(),
+                                         FirstName = "Paul",
+                                         SceondName = "Powell",
                                           GamerTag = "Post Dark",
                                              XP = 1000},
 
-            new Player { playerId = Guid.NewGuid().ToString(),
-                                         firstName = "Fred",
-                                         sceondName = "Flinstone",
+            new Player { PlayerId = Guid.NewGuid().ToString(),
+                                         FirstName = "Fred",
+                                         SceondName = "Flinstone",
                                           GamerTag = "Twinny",
                                              XP = 100},
 
-            new Player { playerId = Guid.NewGuid().ToString(),
-                                         firstName = "Margaret",
-                                         sceondName = "Muldooney",
+            new Player { PlayerId = Guid.NewGuid().ToString(),
+                                         FirstName = "Margaret",
+                                         SceondName = "Muldooney",
                                           GamerTag = "Minny",
                                              XP = 600},
-            new Player { playerId = Guid.NewGuid().ToString(),
-                                         firstName = "Bill",
-                                         sceondName = "Bloggs",
+            new Player { PlayerId = Guid.NewGuid().ToString(),
+                                         FirstName = "Bill",
+                                         SceondName = "Bloggs",
                                           GamerTag = "Mahindy",
                                              XP = 250},
     };
@@ -60,7 +63,7 @@ namespace LINQexamples2025
         public List<GameScore> scores = new List<GameScore>();
         
 
-            public GameObjects()
+        public GameObjects()
         {
             // Create the Game scores here as the Games and players will be created
             Random _randomScore = new Random();
@@ -68,7 +71,7 @@ namespace LINQexamples2025
             foreach (var g in games)
             {
                 var randomPlayer = players
-                        .Select(p => new { p.playerId, gid = Guid.NewGuid() })
+                        .Select(p => new { p.PlayerId, gid = Guid.NewGuid() })
                         .OrderBy(o => o.gid).Take(3).ToList();
 
                 foreach (var p in randomPlayer)
@@ -77,7 +80,7 @@ namespace LINQexamples2025
                     {
                         ScoreID = Guid.NewGuid().ToString(),
                         GameID = g.GameID,
-                        PlayerID = p.playerId,
+                        PlayerID = p.PlayerId,
                         score = _randomScore.Next(5, 600)
                     });
                 }
@@ -85,6 +88,43 @@ namespace LINQexamples2025
             }
 
         }
+
+        
+
+
+    public void ExportModel()
+    {
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            NewLine = Environment.NewLine,
+            HasHeaderRecord = true
+        };
+
+        using (var writer = new StreamWriter("games.csv"))
+        using (var csv = new CsvWriter(writer, config))
+        {
+            csv.WriteRecords(games);
+        }
+
+        using (var writer = new StreamWriter("players.csv"))
+        using (var csv = new CsvWriter(writer, config))
+        {
+            csv.WriteRecords(players);
+        }
+
+        using (var writer = new StreamWriter("scores.csv"))
+        using (var csv = new CsvWriter(writer, config))
+        {
+            csv.WriteRecords(scores);
+        }
+
+        using (var writer = new StreamWriter("collectables.csv"))
+        using (var csv = new CsvWriter(writer, config))
+        {
+            csv.WriteRecords(Collectables);
+        }
+    }
+
     }
     public class GameData
     {
@@ -113,25 +153,25 @@ namespace LINQexamples2025
     }
     public class Player
     {
-        public string playerId; // Key Field
+        public string PlayerId { get; set; } // Key Field
         public int XP { get; set; }
         public string GamerTag { get; set; }
-        public string firstName { get; set; }
-        public string sceondName { get; set; }
+        public string FirstName { get; set; }
+        public string SceondName { get; set; }
 
         public override string ToString()
         {
             return String.Concat(new string[]
                             {" XP ", XP.ToString()," Gamer Tag ",
-                                GamerTag, " first name ",firstName });
+                                GamerTag, " first name ",FirstName });
         }
     }
 
     public class Collectable
     {
-        public string id;
-        public bool selected;
-        public int val;
+        public string id { get; set; }
+        public bool selected { get; set; }
+        public int val { get; set; }
         public override string ToString()
         {
             return String.Concat(new string[]

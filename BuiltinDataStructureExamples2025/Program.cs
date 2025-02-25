@@ -32,10 +32,10 @@
                 XP = 200
             };
             //print<Player>(p);
-            LL_ex();
+            //LL_ex();
             //ST_ex();
             //Queue_ex();
-            //Dict_ex();
+            Dict_ex();
 
             Console.ReadLine();
         }
@@ -105,6 +105,13 @@
 
             Player p2;
             print(players[2]);
+
+            // Printing out Dictionary Keys and Values
+            foreach (KeyValuePair<int, Player> kvp in players)
+            {
+                print(kvp.Key);
+                print(kvp.Value);
+            }
 
             if (players.TryGetValue(2, out p2))
             {
