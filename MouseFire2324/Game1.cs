@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Sprites;
+using System;
 
 namespace MouseFire2324
 {
@@ -21,6 +22,15 @@ namespace MouseFire2324
         MouseState previous, current;
         HealthBar healthBarObject;
         SoundEffectInstance kissing,smacker;
+        private SpriteFont _timerFont;
+        TimeSpan _time = new TimeSpan(0, 0, 0, 10); // 10 seconds
+        public enum GameState
+        {
+            Playing,
+            GameOver
+        }
+
+        GameState _gameState = GameState.Playing;
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -63,6 +73,9 @@ namespace MouseFire2324
             SoundEffect kiss = Content.Load<SoundEffect>("kiss");
             kissing = kiss.CreateInstance();
             smacker = Content.Load<SoundEffect>("smacker").CreateInstance();
+
+            // Load Font
+            _timerFont = Content.Load<SpriteFont>("TimeFont");
             // TODO: use this.Content to load your game content here
         }
 
@@ -86,50 +99,62 @@ namespace MouseFire2324
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             // Sample the mouse state one click at a time
-            
-            current = Mouse.GetState();
-            // if the Mouse is in current Viewport
-            if (GraphicsDevice.Viewport.Bounds.Contains(current.Position))
+            switch(_gameState)
             {
-                // if the mouse left button has been pressed and is now released and the Projectile sprite is invisible
-                if (previous.LeftButton == ButtonState.Pressed &&
-                 current.LeftButton == ButtonState.Released &&
-                  !ProjectileSprite.Visible)
-                {
-                    // set the target for the movement to the current mouse position 
-                    // Change the state of the Projectile and
-                    // Decrease the healthbar value and play the sound effect
-                    _target = current.Position.ToVector2();
-                    ProjectileSprite.Visible = true;
-                    healthBarObject.health -= 10;
-                    if (kissing.State != SoundState.Playing)
-                        kissing.Play();
-                }
-                else
-                { // If We are moving
-                  // Check for Target acquired
-                    if (Vector2.Distance(ProjectileSprite.position, _target) < 10
-                        && ProjectileSprite.Visible)
-                    { // change the state of teh Projectile and move it back to it's initial position
-                        ProjectileSprite.Visible = false;
-                        ProjectileSprite.position = _startPos;
-                    }
-                    // Otherwise if we are moving then keep moving towards the target
-                    else if (ProjectileSprite.Visible)
-                        ProjectileSprite.position = Vector2.Lerp(ProjectileSprite.position, _target, 0.1f);
-                }
-            }
-            // Update the projectile animation
-            ProjectileSprite.Update(gameTime);
-            previous = current;
-            // Update the player for Key presses and then for animation
-            playerSprite.Update(gameTime);
-            // Check for collision between Projectile and player
+                case GameState.Playing:
+                    // Check  Timer for Game Over
+                    _time -= gameTime.ElapsedGameTime;
+                    if(_time.TotalSeconds <= 0)
+                        _gameState = GameState.GameOver;
+                    // Get the current mouse state
+                    current = Mouse.GetState();
+                        // if the Mouse is in current Viewport
+                        if (GraphicsDevice.Viewport.Bounds.Contains(current.Position))
+                        {
+                            // if the mouse left button has been pressed and is now released and the Projectile sprite is invisible
+                            if (previous.LeftButton == ButtonState.Pressed &&
+                             current.LeftButton == ButtonState.Released &&
+                              !ProjectileSprite.Visible)
+                            {
+                                // set the target for the movement to the current mouse position 
+                                // Change the state of the Projectile and
+                                // Decrease the healthbar value and play the sound effect
+                                _target = current.Position.ToVector2();
+                                ProjectileSprite.Visible = true;
+                                healthBarObject.health -= 10;
+                                if (kissing.State != SoundState.Playing)
+                                    kissing.Play();
+                            }
+                            else
+                            { // If We are moving
+                              // Check for Target acquired
+                                if (Vector2.Distance(ProjectileSprite.position, _target) < 10
+                                    && ProjectileSprite.Visible)
+                                { // change the state of teh Projectile and move it back to it's initial position
+                                    ProjectileSprite.Visible = false;
+                                    ProjectileSprite.position = _startPos;
+                                }
+                                // Otherwise if we are moving then keep moving towards the target
+                                else if (ProjectileSprite.Visible)
+                                    ProjectileSprite.position = Vector2.Lerp(ProjectileSprite.position, _target, 0.1f);
+                            }
+                        }
+                        // Update the projectile animation
+                        ProjectileSprite.Update(gameTime);
+                        previous = current;
+                        // Update the player for Key presses and then for animation
+                        playerSprite.Update(gameTime);
+                        // Check for collision between Projectile and player
 
-            if(playerSprite.collisionDetect(ProjectileSprite) && ProjectileSprite.Visible)
-            {
-                if (smacker.State != SoundState.Playing)
-                    smacker.Play();
+                        if(playerSprite.collisionDetect(ProjectileSprite) && ProjectileSprite.Visible)
+                        {
+                            if (smacker.State != SoundState.Playing)
+                                smacker.Play();
+                        }
+                    break;
+                case GameState.GameOver:
+                    Exit();
+                    break;
             }
 
             base.Update(gameTime);
@@ -143,6 +168,7 @@ namespace MouseFire2324
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
             spriteBatch.Begin();
+            spriteBatch.DrawString(_timerFont, ((int)_time.TotalSeconds).ToString(), new Vector2(10, 10), Color.White);
             ProjectileSprite.Draw(spriteBatch);
             healthBarObject.Draw(spriteBatch);
             playerSprite.Draw(spriteBatch);
